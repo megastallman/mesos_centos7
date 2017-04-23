@@ -1,0 +1,27 @@
+---
+  - hosts: all
+    become: yes
+    user: vagrant
+    vars:
+      distro: "trusty"
+    roles:
+      - role: preconfig
+
+  - hosts: masters
+    become: yes
+    user: vagrant
+    vars:
+      master_if: "ansible_eth1"
+      zk_count: "{{ groups['masters'] | length }}"
+      zk_quorum: 2
+    roles:
+      - role: master
+
+  - hosts: slaves
+    become: yes
+    user: vagrant
+    vars:
+      master_if: "ansible_eth1"
+      zk_count: "{{ groups['masters'] | length }}"
+    roles:
+      - role: slave

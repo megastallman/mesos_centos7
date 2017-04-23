@@ -1,0 +1,28 @@
+  - name: Install software-properties-common
+    apt: name=software-properties-common
+
+  - name: Install python-apt
+    apt: name=python-apt
+
+  - name: Add Mesos/Marathon repo
+    apt_key: keyserver="keyserver.ubuntu.com" id="E56151BF"
+
+  - name: Add Mesos/Marathon repo file
+    apt_repository: filename=mesosphere.list repo="deb http://repos.mesosphere.com/ubuntu {{ distro }} main" 
+
+  - name: Add Java repo
+    apt_repository: repo="ppa:webupd8team/java" update_cache=yes
+
+  - name: accept cracle license
+    shell: "echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections"
+    changed_when: no
+
+  - name: Install required packages
+    apt: name={{ item }} 
+    with_items:
+      - oracle-java8-installer
+#      - openjdk-7-jdk
+      - vim
+      - htop
+      - mesos
+      - marathon

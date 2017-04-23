@@ -1,0 +1,38 @@
+  - name: Stop zookeeper on slaves
+    service: name=zookeeper state=stopped enabled=no
+
+  - name: Stop mesos-master on slaves
+    service: name=mesos-master state=stopped enabled=no
+
+  - name: Populate /etc/mesos-slave/ip
+    template: src=ip.j2 dest=/etc/mesos-slave/ip
+
+  - name: Populate /etc/mesos-slave/hostname
+    template: src=ip.j2 dest=/etc/mesos-slave/hostname
+
+  - name: Populate /etc/mesos/zk
+    template: src=zk.j2 dest=/etc/mesos/zk
+
+  - name: Workaround for mesos-slave start errors
+    lineinfile: dest="/etc/default/mesos-slave" regexp="^MESOS_LAUNCHER=" line="MESOS_LAUNCHER=posix"
+
+  - name: Add docker containerizer
+    lineinfile: dest="/etc/mesos-slave/containerizers" regexp="^docker,mesos" line="docker,mesos" create="yes"
+
+  - name: Set executor_registration_timeout
+    lineinfile: dest="/etc/mesos-slave/executor_registration_timeout" regexp="^5mins" line="5mins" create="yes"
+
+  - name: Start and enable mesos-slave
+    service: name=mesos-slave state=started enabled=yes
+
+  - name: Add the Docker key
+    apt_key: keyserver="p80.pool.sks-keyservers.net" id="58118E89F3A912897C070ADBF76221572C52609D"
+
+  - name: Add the Docker repo
+    apt_repository: repo="deb https://apt.dockerproject.org/repo ubuntu-precise main" filename="docker"
+
+  - name: Install docker-engine
+    apt: name="docker-engine"
+
+  - name: Enable and start docker
+    service: name="docker" state="started" enabled="yes"

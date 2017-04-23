@@ -1,0 +1,5 @@
+zk://{% for host in groups['masters'] %}
+{{ 
+hostvars[host][master_if]['ipv4']['address'] 
+}}:2181{% if loop.index != zk_count | int %},{% endif %}
+{% endfor %}/mesos

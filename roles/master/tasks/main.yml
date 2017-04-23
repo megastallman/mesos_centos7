@@ -1,0 +1,40 @@
+  - name: Populate /etc/mesos/zk
+    template: src=zk.j2 dest=/etc/mesos/zk
+     
+  - name: Populate /etc/zookeeper/conf/myid
+    template: src=myid.j2 dest=/etc/zookeeper/conf/myid
+
+  - name: Populate /etc/zookeeper/conf/zoo.cfg
+    template: src=zoo.cfg.j2 dest=/etc/zookeeper/conf/zoo.cfg
+
+  - name: Populate /etc/mesos-master/quorum
+    template: src=quorum.j2 dest=/etc/mesos-master/quorum
+
+  - name: Populate /etc/mesos-master/ip
+    template: src=ip.j2 dest=/etc/mesos-master/ip
+
+  - name: Populate /etc/mesos-master/hostname
+    template: src=ip.j2 dest=/etc/mesos-master/hostname
+
+  - name: Populate /etc/marathon/conf directory
+    file: path=/etc/marathon/conf state=directory recurse=yes
+
+  - name: Copy /etc/mesos-master/hostname to /etc/marathon/conf
+    synchronize: src=/etc/mesos-master/hostname dest=/etc/marathon/conf
+    delegate_to: "{{ inventory_hostname }}"
+
+  - name: Copy /etc/mesos/zk to /etc/marathon/conf/master
+    synchronize: src=/etc/mesos/zk dest=/etc/marathon/conf/master
+    delegate_to: "{{ inventory_hostname }}"
+
+  - name: Populate /etc/marathon/conf/zk
+    template: src=zkm.j2 dest=/etc/marathon/conf/zk
+
+  - name: Disable and stop mesos-slave on masters
+    service: name=mesos-slave state=stopped enabled=no
+
+  - name: Enable mesos-master and marathon on masters
+    service: name={{ item }} state=started enabled=yes
+    with_items:
+      - mesos-master
+      - marathon
